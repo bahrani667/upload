@@ -20,7 +20,7 @@
     /**
      * Passcode/kode akses untuk proteksi upload.
      */
-    UPLOAD_PASSCODE: 'Upload1234!',
+    UPLOAD_PASSCODE: 'Herman1234!',
 
     /**
      * Folder ID tujuan upload (terkoneksi langsung ke portal filesharedrive).
