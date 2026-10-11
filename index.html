@@ -4,44 +4,45 @@
 <head>
   <!-- ============================================================
        DriveUploader — index.html
-       Upload files directly to Google Drive via browser
-       Uses: Google Identity Services (GIS) + Drive API v3
+       Upload file langsung ke Google Drive via Google Apps Script Proxy
+       Desain: Modern Cosmic Glassmorphism & Responsive Dashboard
        ============================================================ -->
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="theme-color" content="#070b14" />
 
-  <!-- ── SEO ─────────────────────────────────────────────────── -->
-  <title>DriveUploader — Upload ke Google Drive</title>
-  <meta name="description" content="Upload file langsung ke Google Drive tanpa membuka aplikasi Drive. Aman, cepat, dan mendukung file besar." />
+  <!-- ── SEO & Social ─────────────────────────────────────────── -->
+  <title>DriveUploader — Upload ke Google Drive Cepat & Aman</title>
+  <meta name="description" content="Upload file langsung ke Google Drive tanpa login akun Drive. Cepat, aman, mendukung multi-file dan ukuran besar dengan tampilan modern." />
   <meta name="robots" content="noindex, nofollow" />
 
   <!-- ── Favicon ─────────────────────────────────────────────── -->
-  <link rel="icon"
-    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☁️</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%236366f1'/><path d='M30 62h40c5 0 9-4 9-9 0-4-3-8-7-9-1-7-7-12-14-12-5 0-10 3-12 8-2-1-4-2-6-2-5 0-9 4-9 9 0 1 0 2 .3 3-5 1-8 6-8 11 0 5 4 9 9 9z' fill='white'/></svg>" />
 
-  <!-- ── Fonts ────────────────────────────────────────────────── -->
+  <!-- ── Fonts: Plus Jakarta Sans & Inter ──────────────────────── -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <!-- ── Stylesheets ──────────────────────────────────────────── -->
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/animations.css" />
-
-  <!-- ── Google Identity Services ─────────────────────────────── -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
 
   <!-- ══════════════════════════════════════════════════════════
-       BACKGROUND CANVAS (animated particles)
+       BACKGROUND CANVAS (Interactive animated particles)
   ══════════════════════════════════════════════════════════ -->
   <canvas id="bg-canvas" aria-hidden="true"></canvas>
 
+  <!-- Ambient background glow orbs -->
+  <div class="ambient-glow glow-top-left" aria-hidden="true"></div>
+  <div class="ambient-glow glow-bottom-right" aria-hidden="true"></div>
+
   <!-- ══════════════════════════════════════════════════════════
-       TOAST NOTIFICATION
+       TOAST NOTIFICATION CONTAINER
   ══════════════════════════════════════════════════════════ -->
   <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
@@ -51,236 +52,426 @@
   <div id="app">
 
     <!-- ════════════════════════════════════════
-         SCREEN 1 — LOGIN
+         SCREEN 1 — LOGIN / PASSCODE GATE
     ════════════════════════════════════════ -->
-    <section id="screen-login" class="screen active" aria-label="Login Screen">
-      <div class="login-card glass-card">
+    <section id="screen-login" class="screen active" aria-label="Layar Autentikasi">
+      <div class="login-wrapper">
+        <div class="login-card glass-card">
 
-        <!-- Logo -->
-        <div class="brand-logo" aria-hidden="true">
-          <div class="logo-orbit">
-            <div class="logo-core">☁️</div>
-            <div class="logo-ring"></div>
-          </div>
-        </div>
-
-        <h1 class="brand-title">DriveUploader</h1>
-        <p class="brand-subtitle">Upload file langsung ke Google Drive<br />tanpa membuka aplikasi Drive</p>
-
-        <!-- Access Code Gate -->
-        <div id="access-gate" class="access-gate">
-          <div class="input-group">
-            <label for="access-code" class="input-label">Kode Akses</label>
-            <div class="input-wrap">
-              <span class="input-icon">🔐</span>
-              <input
-                type="password"
-                id="access-code"
-                class="text-input"
-                placeholder="Masukkan kode akses..."
-                autocomplete="off"
-                aria-required="true"
-              />
-              <button id="toggle-code-visibility" class="toggle-vis-btn" type="button" aria-label="Tampilkan/sembunyikan kode">👁️</button>
+          <!-- Brand Logo Orbit -->
+          <div class="brand-logo" aria-hidden="true">
+            <div class="logo-orbit">
+              <div class="logo-ring outer-ring"></div>
+              <div class="logo-ring inner-ring"></div>
+              <div class="logo-core">
+                <svg class="cloud-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" fill="url(#cloudGrad)" />
+                  <path d="M12 11v6m0-6l-2.5 2.5M12 11l2.5 2.5" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  <defs>
+                    <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#818cf8" />
+                      <stop offset="50%" stop-color="#6366f1" />
+                      <stop offset="100%" stop-color="#06b6d4" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
             </div>
-            <p id="access-error" class="field-error" role="alert" aria-live="assertive"></p>
           </div>
-          <button id="btn-verify-code" class="btn btn-primary btn-full" type="button">
-            <span class="btn-icon">🔓</span>
-            <span>Verifikasi Akses</span>
-          </button>
-        </div>
 
-        <!-- Google Sign-In Button (hidden until code verified) -->
-        <div id="google-signin-area" class="google-signin-area hidden" aria-hidden="true">
-          <div class="divider">
-            <span>Login dengan akun Google Anda</span>
+          <!-- Titles -->
+          <div class="login-header-text">
+            <div class="badge-tag">
+              <span class="pulse-dot"></span>
+              <span>Cloud Storage Portal</span>
+            </div>
+            <h1 class="brand-title">DriveUploader</h1>
+            <p class="brand-subtitle">Upload file langsung ke Google Drive secara cepat, aman, dan tanpa perlu repot login.</p>
           </div>
-          <button id="btn-google-login" class="btn btn-google" type="button" aria-label="Login dengan Google">
-            <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            <span>Lanjutkan dengan Google</span>
-          </button>
-          <p class="security-note">
-            🔒 Hanya scope <code>drive.file</code> yang diminta — akses terbatas pada file yang diupload melalui app ini saja.
-          </p>
-        </div>
 
-        <!-- Features strip -->
-        <div class="feature-strip">
-          <div class="feature-item">
-            <span class="feature-icon">⚡</span>
-            <span>Upload Cepat</span>
-          </div>
-          <div class="feature-item">
-            <span class="feature-icon">📊</span>
-            <span>Progress Real-time</span>
-          </div>
-          <div class="feature-item">
-            <span class="feature-icon">🗂️</span>
-            <span>Multi-file</span>
-          </div>
-          <div class="feature-item">
-            <span class="feature-icon">🔒</span>
-            <span>Aman & Privat</span>
-          </div>
-        </div>
+          <!-- Access Code Gate -->
+          <div id="access-gate" class="access-gate">
+            <div class="input-group">
+              <label for="access-code" class="input-label">
+                <span>Kode Akses Pengunggah</span>
+                <span class="label-badge">Diperlukan</span>
+              </label>
+              <div class="input-wrap">
+                <span class="input-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                  </svg>
+                </span>
+                <input
+                  type="password"
+                  id="access-code"
+                  class="text-input"
+                  placeholder="Masukkan kode akses Anda..."
+                  autocomplete="current-password"
+                  aria-required="true"
+                />
+                <button id="toggle-code-visibility" class="toggle-vis-btn" type="button" aria-label="Tampilkan atau sembunyikan kode akses">
+                  <svg class="eye-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+              <p id="access-error" class="field-error" role="alert" aria-live="assertive"></p>
+            </div>
 
+            <button id="btn-verify-code" class="btn btn-primary btn-full btn-glow" type="button">
+              <span class="btn-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"></path>
+                </svg>
+              </span>
+              <span>Masuk & Mulai Upload</span>
+            </button>
+          </div>
+
+          <!-- Feature Cards Grid -->
+          <div class="feature-strip">
+            <div class="feature-item">
+              <span class="feature-icon" aria-hidden="true">⚡</span>
+              <div class="feature-text">
+                <strong>Super Cepat</strong>
+                <small>Upload instan</small>
+              </div>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon" aria-hidden="true">📊</span>
+              <div class="feature-text">
+                <strong>Real-time</strong>
+                <small>Pantau progress</small>
+              </div>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon" aria-hidden="true">🗂️</span>
+              <div class="feature-text">
+                <strong>Multi-file</strong>
+                <small>Hingga 50 MB</small>
+              </div>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon" aria-hidden="true">🔒</span>
+              <div class="feature-text">
+                <strong>Terenkripsi</strong>
+                <small>Aman & privat</small>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </section>
     <!-- /screen-login -->
 
 
     <!-- ════════════════════════════════════════
-         SCREEN 2 — UPLOAD
+         SCREEN 2 — UPLOAD DASHBOARD
     ════════════════════════════════════════ -->
-    <section id="screen-upload" class="screen" aria-label="Upload Screen">
+    <section id="screen-upload" class="screen" aria-label="Dashboard Upload">
 
-      <!-- Top bar -->
+      <!-- Top Bar -->
       <header class="upload-topbar glass-card-sm">
-        <div class="topbar-brand">
-          <span class="topbar-logo" aria-hidden="true">☁️</span>
-          <span class="topbar-name">DriveUploader</span>
-        </div>
-        <div class="user-info" id="user-info">
-          <div class="verified-badge">
-            <span class="verified-icon" aria-hidden="true">🔓</span>
-            <span class="verified-text">Akses Terverifikasi</span>
+        <div class="topbar-inner">
+          <div class="topbar-brand">
+            <div class="topbar-logo-badge">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" fill="url(#topbarGrad)" />
+                <path d="M12 11v6m0-6l-2 2M12 11l2 2" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <defs>
+                  <linearGradient id="topbarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#818cf8" />
+                    <stop offset="100%" stop-color="#06b6d4" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <div class="topbar-brand-meta">
+              <span class="topbar-name">DriveUploader</span>
+              <span class="topbar-status">
+                <span class="status-dot"></span> Cloud Ready
+              </span>
+            </div>
+          </div>
+
+          <div class="topbar-actions">
+            <div class="user-info" id="user-info">
+              <div class="verified-badge">
+                <span class="verified-icon" aria-hidden="true">✓</span>
+                <span class="verified-text">Akses Terverifikasi</span>
+              </div>
+            </div>
+            <button id="btn-logout" class="btn btn-ghost btn-sm btn-logout" type="button" aria-label="Keluar dari akun">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path>
+              </svg>
+              <span>Keluar</span>
+            </button>
           </div>
         </div>
-        <button id="btn-logout" class="btn btn-ghost btn-sm" type="button" aria-label="Logout">
-          <span>🚪</span> Logout
-        </button>
       </header>
 
+      <!-- Main Layout -->
       <main class="upload-main" role="main">
-        <div class="upload-container">
+        <div class="upload-wrapper">
 
-          <!-- ── Config Panel ──────────────────────────────── -->
-          <div class="config-panel glass-card">
-            <h2 class="panel-title">⚙️ Konfigurasi Upload</h2>
-            <div class="config-grid">
-              <div class="input-group">
-                <label for="folder-id" class="input-label">
-                  Folder ID Google Drive
-                  <span class="label-hint">(kosongkan untuk My Drive)</span>
-                </label>
-                <div class="input-wrap">
-                  <span class="input-icon">📁</span>
-                  <input
-                    type="text"
-                    id="folder-id"
-                    class="text-input"
-                    placeholder="Contoh: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs..."
-                    autocomplete="off"
-                  />
+          <!-- Mobile / Tablet Segmented Tabs -->
+          <nav class="mobile-nav-tabs" role="tablist" aria-label="Mode Tampilan">
+            <button id="tab-btn-upload" class="tab-btn active" role="tab" aria-selected="true" aria-controls="pane-upload">
+              <span class="tab-icon">📤</span>
+              <span class="tab-label">Unggah File</span>
+              <span id="mobile-queue-badge" class="tab-badge hidden">0</span>
+            </button>
+            <button id="tab-btn-drive" class="tab-btn" role="tab" aria-selected="false" aria-controls="pane-drive">
+              <span class="tab-icon">📁</span>
+              <span class="tab-label">File di Drive</span>
+              <span id="mobile-drive-count" class="tab-badge">...</span>
+            </button>
+          </nav>
+
+          <!-- Proportional Dual-Column Dashboard Grid -->
+          <div id="upload-grid-layout" class="upload-grid-layout">
+
+            <!-- ── PANE KIRI: Upload Controls & Queue ─────────── -->
+            <div id="pane-upload" class="dashboard-pane pane-upload" role="tabpanel" aria-labelledby="tab-btn-upload">
+
+              <!-- Config Panel -->
+              <div class="config-panel glass-card">
+                <div class="panel-header">
+                  <div class="panel-header-title">
+                    <span class="panel-icon" aria-hidden="true">⚙️</span>
+                    <h2 class="panel-title">Tujuan Google Drive</h2>
+                  </div>
+                  <span class="config-status-badge">Terkoneksi Otomatis</span>
                 </div>
-                <p class="field-hint">Dapat dari URL folder Drive: drive.google.com/drive/folders/<strong>FOLDER_ID</strong></p>
-              </div>
-            </div>
-          </div>
 
-          <!-- ── Drop Zone ─────────────────────────────────── -->
-          <div
-            id="drop-zone"
-            class="drop-zone glass-card"
-            role="button"
-            tabindex="0"
-            aria-label="Area drag and drop file. Klik atau seret file ke sini."
-            aria-describedby="drop-zone-hint"
-          >
-            <div class="drop-zone-inner" id="drop-zone-content">
-              <div class="drop-icon" aria-hidden="true">
-                <div class="drop-icon-main">📂</div>
-                <div class="drop-icon-arrow">⬆️</div>
-              </div>
-              <p class="drop-title">Seret & letakkan file di sini</p>
-              <p class="drop-subtitle" id="drop-zone-hint">atau klik untuk memilih file dari komputer Anda</p>
-              <div class="drop-meta">
-                <span class="drop-badge">Semua format file</span>
-                <span class="drop-badge">Multi-file</span>
-                <span class="drop-badge">Ukuran besar didukung</span>
-              </div>
-            </div>
-            <!-- Hidden file input -->
-            <input
-              type="file"
-              id="file-input"
-              class="file-input-hidden"
-              multiple
-              aria-hidden="true"
-              tabindex="-1"
-            />
-          </div>
-
-          <!-- ── Drive File Browser ───────────────────────────── -->
-          <div id="drive-browser" class="drive-browser glass-card">
-            <div class="drive-browser-header">
-              <div class="drive-browser-title-area">
-                <h2 class="panel-title">📁 File di Google Drive</h2>
-                <span id="drive-file-count" class="drive-count-badge">Memuat...</span>
-              </div>
-              <div class="drive-browser-actions">
-                <div class="drive-search-wrap">
-                  <span class="drive-search-icon" aria-hidden="true">🔍</span>
-                  <input type="search" id="drive-search" class="drive-search-input" placeholder="Cari file..." autocomplete="off" />
+                <div class="config-grid">
+                  <div class="input-group">
+                    <label for="folder-id" class="input-label">
+                      <span>Folder ID Tujuan</span>
+                      <span class="label-hint">(Otomatis dari konfigurasi)</span>
+                    </label>
+                    <div class="input-wrap input-wrap-folder">
+                      <span class="input-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                      </span>
+                      <input
+                        type="text"
+                        id="folder-id"
+                        class="text-input text-input-folder"
+                        placeholder="ID Folder tujuan Google Drive..."
+                        autocomplete="off"
+                        spellcheck="false"
+                      />
+                    </div>
+                    <p class="field-hint">
+                      File yang diunggah akan otomatis tersimpan di folder ini dan langsung dapat diakses di portal unduhan.
+                    </p>
+                  </div>
                 </div>
-                <button id="btn-refresh-drive" class="btn btn-ghost btn-sm" type="button" aria-label="Refresh daftar file">
-                  🔄 Refresh
-                </button>
+              </div>
+
+              <!-- Drop Zone -->
+              <div
+                id="drop-zone"
+                class="drop-zone glass-card"
+                role="button"
+                tabindex="0"
+                aria-label="Area drag and drop file. Klik atau seret file ke sini untuk mengupload."
+                aria-describedby="drop-zone-hint"
+              >
+                <div class="drop-zone-glow" aria-hidden="true"></div>
+
+                <div class="drop-zone-inner" id="drop-zone-content">
+                  <div class="drop-icon" aria-hidden="true">
+                    <div class="drop-icon-circle">
+                      <svg class="drop-cloud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" fill="rgba(99, 102, 241, 0.15)"></path>
+                        <polyline points="12 11 12 17"></polyline>
+                        <polyline points="9 14 12 11 15 14"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div class="drop-text-group">
+                    <p class="drop-title">Tarik & Lepaskan File di Sini</p>
+                    <p class="drop-subtitle" id="drop-zone-hint">atau klik area ini untuk memilih file dari perangkat Anda</p>
+                  </div>
+
+                  <div class="drop-action-btn-wrap">
+                    <span class="btn btn-outline-select">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"></path>
+                      </svg>
+                      <span>Pilih File dari Komputer</span>
+                    </span>
+                  </div>
+
+                  <div class="drop-meta">
+                    <span class="drop-badge">✓ Semua Format File</span>
+                    <span class="drop-badge">✓ Mendukung Multi-File</span>
+                    <span class="drop-badge">✓ Maks 50 MB / File</span>
+                  </div>
+                </div>
+
+                <!-- Hidden file input -->
+                <input
+                  type="file"
+                  id="file-input"
+                  class="file-input-hidden"
+                  multiple
+                  aria-hidden="true"
+                  tabindex="-1"
+                />
+              </div>
+
+              <!-- File Queue Section -->
+              <div id="file-queue-section" class="file-queue-section glass-card hidden">
+                <div class="queue-header">
+                  <div class="queue-title-wrap">
+                    <span class="panel-icon" aria-hidden="true">📋</span>
+                    <h2 class="panel-title">Antrian Unggah</h2>
+                    <span id="queue-count" class="queue-count">0 file</span>
+                  </div>
+                  <div class="queue-actions">
+                    <button id="btn-clear-queue" class="btn btn-ghost btn-sm btn-clear" type="button" title="Bersihkan antrian file">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                      <span>Bersihkan</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div id="file-list" class="file-list" role="list" aria-label="Daftar file yang akan diupload"></div>
+
+                <!-- Overall progress -->
+                <div id="overall-progress" class="overall-progress hidden">
+                  <div class="progress-header">
+                    <div class="progress-label-wrap">
+                      <span class="progress-pulse-dot"></span>
+                      <span class="progress-label">Mengunggah ke Google Drive...</span>
+                    </div>
+                    <span id="overall-progress-text" class="progress-text">0%</span>
+                  </div>
+                  <div class="progress-bar-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Progress upload keseluruhan">
+                    <div id="overall-progress-fill" class="progress-bar-fill"></div>
+                  </div>
+                </div>
+
+                <!-- Upload button -->
+                <div class="queue-footer">
+                  <button id="btn-upload-all" class="btn btn-primary btn-upload btn-glow" type="button">
+                    <span class="btn-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09zM12 15l-3-3m0 0l8.5-8.5a2.12 2.12 0 0 1 3 3L12 15z"></path>
+                      </svg>
+                    </span>
+                    <span id="btn-upload-label">Mulai Upload ke Google Drive</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ── PANE KANAN: Drive File Explorer ────────────── -->
+            <div id="pane-drive" class="dashboard-pane pane-drive" role="tabpanel" aria-labelledby="tab-btn-drive">
+              <div id="drive-browser" class="drive-browser glass-card">
+
+                <div class="drive-browser-header">
+                  <div class="drive-browser-title-area">
+                    <div class="drive-title-icon-wrap" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 class="panel-title">File di Google Drive</h2>
+                      <span class="drive-folder-hint">Folder Bersama Real-Time</span>
+                    </div>
+                    <span id="drive-file-count" class="drive-count-badge">Memuat...</span>
+                  </div>
+
+                  <div class="drive-browser-actions">
+                    <button id="btn-refresh-drive" class="btn btn-ghost btn-sm btn-refresh" type="button" aria-label="Segarkan daftar file dari Google Drive">
+                      <svg class="refresh-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                      </svg>
+                      <span>Refresh</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="drive-search-bar-wrap">
+                  <div class="drive-search-wrap">
+                    <span class="drive-search-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                      </svg>
+                    </span>
+                    <input type="search" id="drive-search" class="drive-search-input" placeholder="Cari nama atau format file..." autocomplete="off" />
+                    <button type="button" id="drive-search-clear" class="drive-search-clear hidden" aria-label="Hapus pencarian">✕</button>
+                  </div>
+
+                  <!-- Quick Filter Chips -->
+                  <div class="drive-filter-chips" role="group" aria-label="Filter kategori file">
+                    <button type="button" class="filter-chip active" data-filter="all">Semua</button>
+                    <button type="button" class="filter-chip" data-filter="docs">Dokumen</button>
+                    <button type="button" class="filter-chip" data-filter="images">Gambar</button>
+                    <button type="button" class="filter-chip" data-filter="media">Media</button>
+                    <button type="button" class="filter-chip" data-filter="archives">Arsip</button>
+                  </div>
+                </div>
+
+                <!-- Drive File List Container -->
+                <div id="drive-file-list" class="drive-file-list" role="list" aria-label="Daftar file di Google Drive">
+                  <div class="drive-loading" id="drive-loading">
+                    <div class="drive-spinner"></div>
+                    <div class="drive-loading-text">
+                      <strong>Menghubungkan ke Google Drive...</strong>
+                      <span>Mengambil daftar file terbaru</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="drive-empty" class="drive-empty hidden">
+                  <div class="empty-state-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.4">
+                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                      <line x1="9" y1="14" x2="15" y2="14"></line>
+                    </svg>
+                  </div>
+                  <h3>Belum Ada File</h3>
+                  <p>Folder Google Drive ini masih kosong. Silakan unggah file pertama Anda melalui formulir di sebelah kiri.</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="drive-error" class="drive-error hidden">
+                  <div class="error-state-icon" aria-hidden="true">⚠️</div>
+                  <h3>Gagal Memuat File</h3>
+                  <p id="drive-error-msg">Tidak dapat menghubungi server Google Drive.</p>
+                  <button id="btn-retry-drive" class="btn btn-ghost btn-sm btn-retry" type="button">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    <span>Coba Lagi</span>
+                  </button>
+                </div>
+
               </div>
             </div>
-            <div id="drive-file-list" class="drive-file-list" role="list" aria-label="Daftar file di Google Drive">
-              <div class="drive-loading" id="drive-loading">
-                <div class="drive-spinner"></div>
-                <span>Mengambil data dari Google Drive...</span>
-              </div>
-            </div>
-            <div id="drive-empty" class="drive-empty hidden">
-              <span class="drive-empty-icon" aria-hidden="true">📭</span>
-              <p>Belum ada file di folder Drive ini.</p>
-            </div>
-            <div id="drive-error" class="drive-error hidden">
-              <span class="drive-error-icon" aria-hidden="true">⚠️</span>
-              <p id="drive-error-msg">Gagal mengambil data file.</p>
-              <button id="btn-retry-drive" class="btn btn-ghost btn-sm" type="button">🔄 Coba Lagi</button>
-            </div>
+
           </div>
-
-          <!-- ── File Queue ─────────────────────────────────── -->
-          <div id="file-queue-section" class="file-queue-section hidden">
-            <div class="queue-header">
-              <h2 class="panel-title">📋 Antrian Upload</h2>
-              <div class="queue-actions">
-                <span id="queue-count" class="queue-count">0 file</span>
-                <button id="btn-clear-queue" class="btn btn-ghost btn-sm" type="button">🗑️ Bersihkan</button>
-              </div>
-            </div>
-            <div id="file-list" class="file-list" role="list" aria-label="Daftar file yang akan diupload"></div>
-
-            <!-- Overall progress -->
-            <div id="overall-progress" class="overall-progress hidden">
-              <div class="progress-header">
-                <span class="progress-label">Progress Keseluruhan</span>
-                <span id="overall-progress-text" class="progress-text">0%</span>
-              </div>
-              <div class="progress-bar-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Progress upload keseluruhan">
-                <div id="overall-progress-fill" class="progress-bar-fill"></div>
-              </div>
-            </div>
-
-            <!-- Upload button -->
-            <div class="queue-footer">
-              <button id="btn-upload-all" class="btn btn-primary btn-upload" type="button">
-                <span class="btn-icon" aria-hidden="true">🚀</span>
-                <span id="btn-upload-label">Upload ke Google Drive</span>
-              </button>
-            </div>
-          </div>
+          <!-- /upload-grid-layout -->
 
         </div>
       </main>
@@ -291,47 +482,60 @@
     <!-- ════════════════════════════════════════
          SCREEN 3 — RESULT
     ════════════════════════════════════════ -->
-    <section id="screen-result" class="screen" aria-label="Result Screen">
-      <div class="result-card glass-card">
+    <section id="screen-result" class="screen" aria-label="Hasil Upload">
+      <div class="result-wrapper">
+        <div class="result-card glass-card">
 
-        <!-- Result header (success/error) -->
-        <div id="result-header" class="result-header">
-          <div id="result-icon" class="result-icon" aria-hidden="true">✅</div>
-          <h2 id="result-title" class="result-title">Upload Selesai!</h2>
-          <p id="result-subtitle" class="result-subtitle">Semua file berhasil diupload ke Google Drive.</p>
-        </div>
-
-        <!-- Summary stats -->
-        <div id="result-stats" class="result-stats">
-          <div class="result-stat-card">
-            <span id="stat-success" class="stat-val stat-success">0</span>
-            <span class="stat-lbl">Berhasil</span>
+          <!-- Header -->
+          <div id="result-header" class="result-header">
+            <div id="result-icon" class="result-icon" aria-hidden="true">🎉</div>
+            <h2 id="result-title" class="result-title">Upload Selesai!</h2>
+            <p id="result-subtitle" class="result-subtitle">File Anda berhasil diupload ke Google Drive.</p>
           </div>
-          <div class="result-stat-card">
-            <span id="stat-failed" class="stat-val stat-fail">0</span>
-            <span class="stat-lbl">Gagal</span>
+
+          <!-- Summary Stats -->
+          <div id="result-stats" class="result-stats">
+            <div class="result-stat-card stat-card-success">
+              <span id="stat-success" class="stat-val stat-success">0</span>
+              <span class="stat-lbl">Berhasil</span>
+            </div>
+            <div class="result-stat-card stat-card-fail">
+              <span id="stat-failed" class="stat-val stat-fail">0</span>
+              <span class="stat-lbl">Gagal</span>
+            </div>
+            <div class="result-stat-card stat-card-total">
+              <span id="stat-total-size" class="stat-val">0 B</span>
+              <span class="stat-lbl">Total Ukuran</span>
+            </div>
           </div>
-          <div class="result-stat-card">
-            <span id="stat-total-size" class="stat-val">0 B</span>
-            <span class="stat-lbl">Total Size</span>
+
+          <!-- File Result List -->
+          <div class="result-list-wrap">
+            <h3 class="result-list-title">Rincian File yang Diunggah</h3>
+            <div id="result-file-list" class="result-file-list" role="list" aria-label="Hasil upload per file"></div>
           </div>
+
+          <!-- Actions -->
+          <div class="result-actions">
+            <button id="btn-upload-more" class="btn btn-primary btn-glow" type="button">
+              <span class="btn-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 5v14M5 12h14"></path>
+                </svg>
+              </span>
+              <span>Upload File Lainnya</span>
+            </button>
+            <button id="btn-result-logout" class="btn btn-ghost" type="button">
+              <span class="btn-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path>
+                </svg>
+              </span>
+              <span>Keluar</span>
+            </button>
+          </div>
+
         </div>
-
-        <!-- File result list -->
-        <div id="result-file-list" class="result-file-list" role="list" aria-label="Hasil upload per file"></div>
-
-        <!-- Actions -->
-        <div class="result-actions">
-          <button id="btn-upload-more" class="btn btn-primary" type="button">
-            <span class="btn-icon" aria-hidden="true">⬆️</span>
-            Upload File Lagi
-          </button>
-          <button id="btn-result-logout" class="btn btn-ghost" type="button">
-            <span class="btn-icon" aria-hidden="true">🚪</span>
-            Logout
-          </button>
-        </div>
-
       </div>
     </section>
     <!-- /screen-result -->
@@ -340,7 +544,7 @@
   <!-- /app -->
 
 
-  <!-- ── Scripts ──────────────────────────────────────────── -->
+  <!-- ── Application Script ─────────────────────────────────────── -->
   <script src="js/uploader.js" defer></script>
 
 </body>
