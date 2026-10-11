@@ -711,6 +711,17 @@ body {
   background: rgba(244, 63, 94, 0.08);
 }
 
+.btn-change-passcode {
+  color: var(--text-secondary);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.btn-change-passcode:hover {
+  color: var(--accent-primary);
+  border-color: rgba(99, 102, 241, 0.45);
+  background: rgba(99, 102, 241, 0.1);
+}
+
 /* ── Main Layout & Dashboard Grid ────────────────────────── */
 .upload-main {
   padding: 20px 16px 48px;
@@ -1760,6 +1771,181 @@ body {
   animation: toastSlideDown 0.3s ease forwards;
 }
 
+/* ── Reset Passcode Link in Login ────────────────────────── */
+.login-reset-wrap {
+  margin-top: 6px;
+  text-align: center;
+}
+
+.btn-text-link {
+  background: none;
+  border: none;
+  color: var(--accent-sky);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: 0.85;
+  transition: opacity var(--t-fast);
+}
+
+.btn-text-link:hover {
+  opacity: 1;
+  color: #ffffff;
+}
+
+/* ── Modal Dialog: Ganti Kode Akses ──────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 11, 20, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 90;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--t-normal), visibility var(--t-normal);
+}
+
+.modal-backdrop.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-highlight);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+  0% { opacity: 0; transform: scale(0.94) translateY(12px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+.modal-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  transition: all var(--t-fast);
+}
+
+.modal-close-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.modal-info-box {
+  display: flex;
+  gap: 10px;
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.modal-info-box .info-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.modal-info-box strong {
+  color: var(--accent-cyan);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.modal-info-box code {
+  color: var(--accent-sky);
+  background: rgba(56, 189, 248, 0.12);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.modal-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* ── Hidden Utility ──────────────────────────────────────── */
 .hidden {
   display: none !important;
@@ -1821,11 +2007,13 @@ body {
     padding: 6px 9px;
   }
 
-  .btn-logout span {
+  .btn-logout span,
+  .btn-change-passcode span {
     display: none;
   }
 
-  .btn-logout {
+  .btn-logout,
+  .btn-change-passcode {
     padding: 6px 10px;
   }
 

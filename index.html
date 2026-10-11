@@ -119,6 +119,9 @@
                 </button>
               </div>
               <p id="access-error" class="field-error" role="alert" aria-live="assertive"></p>
+              <div id="login-reset-wrap" class="login-reset-wrap hidden">
+                <button id="btn-login-reset-passcode" type="button" class="btn-text-link">Lupa sandi kustom? Reset ke sandi default</button>
+              </div>
             </div>
 
             <button id="btn-verify-code" class="btn btn-primary btn-full btn-glow" type="button">
@@ -205,6 +208,13 @@
                 <span class="verified-text">Akses Terverifikasi</span>
               </div>
             </div>
+            <button id="btn-change-passcode" class="btn btn-ghost btn-sm btn-change-passcode" type="button" aria-label="Ganti Sandi Akses Frontend" title="Ganti sandi akses aplikasi">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0110 0v4"></path>
+              </svg>
+              <span>Ganti Sandi</span>
+            </button>
             <button id="btn-logout" class="btn btn-ghost btn-sm btn-logout" type="button" aria-label="Keluar dari akun">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path>
@@ -542,6 +552,79 @@
 
   </div>
   <!-- /app -->
+
+
+  <!-- ════════════════════════════════════════
+       MODAL GANTI KODE AKSES FRONTEND
+  ════════════════════════════════════════ -->
+  <div id="modal-change-passcode" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-passcode-title">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0110 0v4"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 id="modal-passcode-title" class="modal-title">Ganti Sandi Aplikasi</h3>
+            <p class="modal-subtitle">Ubah kode akses login untuk antarmuka web ini</p>
+          </div>
+        </div>
+        <button id="btn-close-passcode-modal" class="modal-close-btn" type="button" aria-label="Tutup modal">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-info-box">
+          <div class="info-icon">💡</div>
+          <div class="info-text">
+            <strong>Sistem Dua Jalur Independen:</strong>
+            <p>Mengubah sandi di sini hanya untuk login antarmuka ini. Verifikasi upload ke Google Apps Script tetap otomatis terhubung menggunakan kunci internal (<code>Herman1234!</code>) sehingga upload selalu sukses.</p>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="input-current-passcode" class="input-label">
+            <span>Kode Akses Saat Ini</span>
+          </label>
+          <div class="input-wrap">
+            <input type="password" id="input-current-passcode" class="text-input" placeholder="Masukkan sandi saat ini..." autocomplete="off">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="input-new-passcode" class="input-label">
+            <span>Kode Akses Baru</span>
+          </label>
+          <div class="input-wrap">
+            <input type="password" id="input-new-passcode" class="text-input" placeholder="Masukkan sandi baru (minimal 4 karakter)..." autocomplete="off">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="input-confirm-passcode" class="input-label">
+            <span>Konfirmasi Kode Akses Baru</span>
+          </label>
+          <div class="input-wrap">
+            <input type="password" id="input-confirm-passcode" class="text-input" placeholder="Ulangi sandi baru..." autocomplete="off">
+          </div>
+        </div>
+
+        <p id="modal-passcode-error" class="field-error" role="alert" aria-live="assertive"></p>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-reset-default-passcode" class="btn btn-ghost btn-sm" type="button" title="Kembalikan sandi ke bawaan">
+          <span>Reset ke Default</span>
+        </button>
+        <div class="modal-actions-right">
+          <button id="btn-cancel-passcode" class="btn btn-ghost btn-sm" type="button">Batal</button>
+          <button id="btn-save-new-passcode" class="btn btn-primary btn-sm btn-glow" type="button">Simpan Sandi</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
   <!-- ── Application Script ─────────────────────────────────────── -->

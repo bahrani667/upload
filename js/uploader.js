@@ -18,9 +18,24 @@
     APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwHzwQUktCF6q29YR1RUFva4ZANuZEdycHgRKrGT33mvlJqJz1dj7bNVHY8fZv4pdJEsg/exec',
 
     /**
-     * Passcode/kode akses untuk proteksi upload.
+     * Passcode khusus untuk Google Apps Script (Backend Secret Key).
+     * PENTING: Google Apps Script backend yang sudah dideploy mengunci passcode ke 'Herman1234!'.
+     * JANGAN DIUBAH nilai ini agar proses upload ke Google Drive selalu diverifikasi sukses.
      */
-    UPLOAD_PASSCODE: 'Herman1234!',
+    APPS_SCRIPT_PASSCODE: 'Herman1234!',
+
+    /**
+     * Passcode default untuk login ke antarmuka aplikasi frontend.
+     * Anda dapat mengubah nilai ini di sini ATAU langsung menggantinya di web via tombol "Ganti Sandi".
+     */
+    DEFAULT_APP_PASSCODE: 'Akuja',
+
+    /**
+     * Getter kompatibilitas mundur jika ada modul yang memanggil UPLOAD_PASSCODE
+     */
+    get UPLOAD_PASSCODE() {
+      return this.APPS_SCRIPT_PASSCODE;
+    },
 
     /**
      * Folder ID tujuan upload (terkoneksi langsung ke portal filesharedrive).
@@ -305,11 +320,60 @@
      AUTH / PASSCODE MANAGER
   ══════════════════════════════════════════════════════════ */
   const AuthManager = {
+    STORAGE_KEY: 'driveuploader_custom_passcode',
     elInput: null,
     elError: null,
     elBtnVerify: null,
     elToggle: null,
     elGateArea: null,
+    elResetWrap: null,
+    elBtnReset: null,
+
+    getAppPasscode() {
+      try {
+        const custom = localStorage.getItem(this.STORAGE_KEY);
+        if (custom && custom.trim()) {
+          // Bersihkan jika masih tersimpan password lama Herman1234! di browser agar beralih ke Akuja
+          if (custom.trim() === 'Herman1234!') {
+            localStorage.removeItem(this.STORAGE_KEY);
+            return CONFIG.DEFAULT_APP_PASSCODE;
+          }
+          return custom.trim();
+        }
+      } catch (e) {}
+      return CONFIG.DEFAULT_APP_PASSCODE;
+    },
+
+    setAppPasscode(newCode) {
+      try {
+        if (!newCode || newCode === CONFIG.DEFAULT_APP_PASSCODE) {
+          localStorage.removeItem(this.STORAGE_KEY);
+        } else {
+          localStorage.setItem(this.STORAGE_KEY, newCode.trim());
+        }
+        return true;
+      } catch (e) {
+        console.error('Gagal menyimpan ke localStorage:', e);
+        return false;
+      }
+    },
+
+    resetAppPasscode() {
+      try {
+        localStorage.removeItem(this.STORAGE_KEY);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    },
+
+    hasCustomPasscode() {
+      try {
+        return Boolean(localStorage.getItem(this.STORAGE_KEY));
+      } catch (e) {
+        return false;
+      }
+    },
 
     init() {
       this.elInput = document.getElementById('access-code');
@@ -317,8 +381,24 @@
       this.elBtnVerify = document.getElementById('btn-verify-code');
       this.elToggle = document.getElementById('toggle-code-visibility');
       this.elGateArea = document.getElementById('access-gate');
+      this.elResetWrap = document.getElementById('login-reset-wrap');
+      this.elBtnReset = document.getElementById('btn-login-reset-passcode');
 
       if (!this.elInput || !this.elBtnVerify) return;
+
+      // Reset button click
+      if (this.elBtnReset) {
+        this.elBtnReset.addEventListener('click', () => {
+          this.resetAppPasscode();
+          this.clearError();
+          if (this.elResetWrap) this.elResetWrap.classList.add('hidden');
+          ToastManager.show(`Sandi kustom direset! Gunakan sandi default: ${CONFIG.DEFAULT_APP_PASSCODE}`, 'info', 4500);
+          if (this.elInput) {
+            this.elInput.value = '';
+            this.elInput.focus();
+          }
+        });
+      }
 
       // Toggle visibility
       if (this.elToggle) {
@@ -351,6 +431,7 @@
 
     clearError() {
       if (this.elError) this.elError.textContent = '';
+      if (this.elResetWrap) this.elResetWrap.classList.add('hidden');
       if (this.elInput) {
         this.elInput.style.borderColor = '';
         this.elInput.style.boxShadow = '';
@@ -359,6 +440,9 @@
 
     setError(msg) {
       if (this.elError) this.elError.textContent = msg;
+      if (this.elResetWrap && this.hasCustomPasscode()) {
+        this.elResetWrap.classList.remove('hidden');
+      }
       if (this.elInput) {
         this.elInput.style.borderColor = 'var(--accent-danger)';
         this.elInput.style.boxShadow = '0 0 0 3px rgba(244, 63, 94, 0.2)';
@@ -381,7 +465,10 @@
         return;
       }
 
-      if (entered !== CONFIG.UPLOAD_PASSCODE) {
+      const expected = this.getAppPasscode();
+
+      // Verifikasi passcode login frontend (hanya menerima passcode antarmuka web)
+      if (entered !== expected) {
         this.setError('Kode akses salah. Silakan periksa kembali.');
         this.elInput.value = '';
         this.elInput.focus();
@@ -647,6 +734,9 @@
               </button>
             </div>
             <p id="access-error" class="field-error" role="alert" aria-live="assertive"></p>
+            <div id="login-reset-wrap" class="login-reset-wrap hidden">
+              <button id="btn-login-reset-passcode" type="button" class="btn-text-link">Lupa sandi kustom? Reset ke sandi default</button>
+            </div>
           </div>
           <button id="btn-verify-code" class="btn btn-primary btn-full btn-glow" type="button">
             <span class="btn-icon" aria-hidden="true">
@@ -752,7 +842,9 @@
 
           UIManager.updateFileProgress(id, 25);
           const payload = {
-            passcode: CONFIG.UPLOAD_PASSCODE,
+            // Passcode khusus Google Apps Script (SELALU 'Herman1234!')
+            // Terpisah dari sandi login aplikasi, sehingga upload ke Apps Script selalu sukses
+            passcode: CONFIG.APPS_SCRIPT_PASSCODE,
             fileName: file.name,
             mimeType: file.type || 'application/octet-stream',
             fileData: base64Data,
@@ -1280,12 +1372,139 @@
   };
 
   /* ══════════════════════════════════════════════════════════
+     PASSCODE MODAL MANAGER (Ganti Sandi Frontend)
+  ══════════════════════════════════════════════════════════ */
+  const PasscodeModalManager = {
+    modal: null,
+    btnOpen: null,
+    btnClose: null,
+    btnCancel: null,
+    btnSave: null,
+    btnResetDefault: null,
+    inputCurrent: null,
+    inputNew: null,
+    inputConfirm: null,
+    errorEl: null,
+
+    init() {
+      this.modal = document.getElementById('modal-change-passcode');
+      this.btnOpen = document.getElementById('btn-change-passcode');
+      this.btnClose = document.getElementById('btn-close-passcode-modal');
+      this.btnCancel = document.getElementById('btn-cancel-passcode');
+      this.btnSave = document.getElementById('btn-save-new-passcode');
+      this.btnResetDefault = document.getElementById('btn-reset-default-passcode');
+      this.inputCurrent = document.getElementById('input-current-passcode');
+      this.inputNew = document.getElementById('input-new-passcode');
+      this.inputConfirm = document.getElementById('input-confirm-passcode');
+      this.errorEl = document.getElementById('modal-passcode-error');
+
+      if (!this.modal) return;
+
+      if (this.btnOpen) {
+        this.btnOpen.addEventListener('click', () => this.open());
+      }
+      if (this.btnClose) {
+        this.btnClose.addEventListener('click', () => this.close());
+      }
+      if (this.btnCancel) {
+        this.btnCancel.addEventListener('click', () => this.close());
+      }
+      if (this.btnSave) {
+        this.btnSave.addEventListener('click', () => this.save());
+      }
+      if (this.btnResetDefault) {
+        this.btnResetDefault.addEventListener('click', () => this.resetDefault());
+      }
+
+      // Close on backdrop click
+      this.modal.addEventListener('click', (e) => {
+        if (e.target === this.modal) this.close();
+      });
+
+      // Close on Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !this.modal.classList.contains('hidden')) {
+          this.close();
+        }
+      });
+    },
+
+    open() {
+      if (!this.modal) return;
+      this.clearError();
+      if (this.inputCurrent) this.inputCurrent.value = '';
+      if (this.inputNew) this.inputNew.value = '';
+      if (this.inputConfirm) this.inputConfirm.value = '';
+      this.modal.classList.remove('hidden');
+      setTimeout(() => {
+        if (this.inputCurrent) this.inputCurrent.focus();
+      }, 50);
+    },
+
+    close() {
+      if (!this.modal) return;
+      this.modal.classList.add('hidden');
+      this.clearError();
+    },
+
+    clearError() {
+      if (this.errorEl) this.errorEl.textContent = '';
+    },
+
+    setError(msg) {
+      if (this.errorEl) this.errorEl.textContent = msg;
+    },
+
+    save() {
+      const current = this.inputCurrent ? this.inputCurrent.value.trim() : '';
+      const newPass = this.inputNew ? this.inputNew.value.trim() : '';
+      const confirmPass = this.inputConfirm ? this.inputConfirm.value.trim() : '';
+
+      const expected = AuthManager.getAppPasscode();
+
+      // Periksa kode akses saat ini
+      if (current !== expected) {
+        this.setError('Kode akses saat ini tidak sesuai.');
+        if (this.inputCurrent) this.inputCurrent.focus();
+        return;
+      }
+
+      if (!newPass || newPass.length < 4) {
+        this.setError('Kode akses baru minimal 4 karakter.');
+        if (this.inputNew) this.inputNew.focus();
+        return;
+      }
+
+      if (newPass !== confirmPass) {
+        this.setError('Konfirmasi sandi baru tidak cocok.');
+        if (this.inputConfirm) this.inputConfirm.focus();
+        return;
+      }
+
+      const ok = AuthManager.setAppPasscode(newPass);
+      if (ok) {
+        this.close();
+        ToastManager.show('Sandi aplikasi berhasil diperbarui! Koneksi upload ke Google Apps Script tetap aktif.', 'success', 5000);
+      } else {
+        this.setError('Gagal menyimpan sandi ke penyimpanan browser.');
+      }
+    },
+
+    resetDefault() {
+      AuthManager.resetAppPasscode();
+      this.close();
+      ToastManager.show(`Sandi aplikasi dikembalikan ke default (${CONFIG.DEFAULT_APP_PASSCODE}).`, 'info', 4000);
+    }
+  };
+
+  /* ══════════════════════════════════════════════════════════
      ENTRY POINT
   ══════════════════════════════════════════════════════════ */
   function init() {
     CanvasManager.init();
     ToastManager.init();
     AuthManager.init();
+    PasscodeModalManager.init();
     ScreenManager.show('login');
   }
 
