@@ -4,7 +4,7 @@
 // ============================================================
 
 // ── KONFIGURASI ───────────────────────────────────────────────
-const UPLOAD_PASSCODE  = 'Herman1234!';                        // ← Sudah diisi, JANGAN diubah
+const UPLOAD_PASSCODE = 'Upload1234!';                        // ← Sudah diisi, JANGAN diubah
 const TARGET_FOLDER_ID = '1h-L2Www0WneLByudxNpMRgENYttFFk54'; // ← Folder filesharedrive
 
 // ── Handler GET ───────────────────────────────────────────────
@@ -32,11 +32,11 @@ function doPost(e) {
     }
 
     // Decode base64 → blob
-    var bytes  = Utilities.base64Decode(data.fileData);
-    var blob   = Utilities.newBlob(bytes, data.mimeType || 'application/octet-stream', data.fileName);
+    var bytes = Utilities.base64Decode(data.fileData);
+    var blob = Utilities.newBlob(bytes, data.mimeType || 'application/octet-stream', data.fileName);
 
     // Pilih folder tujuan
-    var fid    = (data.folderId && data.folderId.trim()) ? data.folderId.trim() : TARGET_FOLDER_ID;
+    var fid = (data.folderId && data.folderId.trim()) ? data.folderId.trim() : TARGET_FOLDER_ID;
     var folder = fid ? DriveApp.getFolderById(fid) : DriveApp.getRootFolder();
 
     // Simpan file ke Google Drive
@@ -44,8 +44,8 @@ function doPost(e) {
 
     // Return sukses
     return out.setContent(JSON.stringify({
-      success:  true,
-      fileId:   file.getId(),
+      success: true,
+      fileId: file.getId(),
       fileName: file.getName(),
       driveUrl: 'https://drive.google.com/file/d/' + file.getId() + '/view'
     }));
