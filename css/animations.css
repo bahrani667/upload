@@ -1,0 +1,208 @@
+/* =============================================================
+   DriveUploader — animations.css
+   Micro-animations, transitions, and keyframes
+   ============================================================= */
+
+/* ── Screen Transitions ──────────────────────────────────── */
+.screen {
+  transition: opacity var(--t-slow), transform var(--t-slow);
+}
+
+.screen-enter {
+  animation: screenEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.screen-exit {
+  animation: screenExit 0.3s ease forwards;
+}
+
+@keyframes screenEnter {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes screenExit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.98);
+  }
+}
+
+/* ── Card Entrance ───────────────────────────────────────── */
+.glass-card,
+.glass-card-sm {
+  animation: cardFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes cardFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── File Item Animation ─────────────────────────────────── */
+.file-item {
+  animation: itemSlideIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes itemSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.file-item.removing {
+  animation: itemSlideOut 0.2s ease forwards;
+}
+
+@keyframes itemSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+    max-height: 120px;
+    margin-bottom: 10px;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(16px);
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+/* ── Result Items ────────────────────────────────────────── */
+.result-file-item {
+  animation: itemSlideIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Drop Zone Drag Pulse ────────────────────────────────── */
+.drop-zone.drag-over .drop-icon-main {
+  animation: dragPulse 0.6s ease-in-out infinite;
+}
+
+@keyframes dragPulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.15); }
+}
+
+/* ── Button Loading Spinner ──────────────────────────────── */
+.btn.loading .btn-icon {
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Upload Success Particle Burst ──────────────────────── */
+.success-burst {
+  animation: burstPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes burstPop {
+  0%   { transform: scale(0) rotate(-10deg); opacity: 0; }
+  60%  { transform: scale(1.2) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* ── Glow Pulse on Active Upload ─────────────────────────── */
+.file-item.uploading {
+  animation: itemSlideIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both,
+             glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: none; }
+  50%       { box-shadow: 0 0 20px rgba(108,99,255,0.2); }
+}
+
+/* ── Progress Shimmer (already in style.css, extended here) ─ */
+.progress-bar-fill.active::after {
+  animation: shimmer 1s infinite;
+}
+
+/* ── Stat Card Count-up highlight ───────────────────────── */
+.stat-val {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.stat-val.updated {
+  animation: countPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes countPop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* ── Feature strip item stagger ─────────────────────────── */
+.feature-item:nth-child(1) { animation-delay: 0.1s; }
+.feature-item:nth-child(2) { animation-delay: 0.2s; }
+.feature-item:nth-child(3) { animation-delay: 0.3s; }
+.feature-item:nth-child(4) { animation-delay: 0.4s; }
+
+.feature-item {
+  animation: itemSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Hover tilt on glass cards ───────────────────────────── */
+.login-card,
+.result-card {
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* ── Background gradient animation ──────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    ellipse at 30% 40%,
+    rgba(108, 99, 255, 0.08) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    ellipse at 70% 60%,
+    rgba(72, 202, 228, 0.05) 0%,
+    transparent 50%
+  );
+  animation: bgDrift 12s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes bgDrift {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  33%  { transform: translate(-2%, 3%) rotate(1deg); }
+  66%  { transform: translate(2%, -2%) rotate(-1deg); }
+  100% { transform: translate(-1%, 1%) rotate(0.5deg); }
+}
