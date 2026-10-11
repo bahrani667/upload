@@ -2,47 +2,44 @@
 
 **DriveUploader** adalah aplikasi web yang memungkinkan siapapun mengupload file langsung ke Google Drive milik pemilik — **tanpa perlu login Google account**. Cukup masukkan kode akses dan upload!
 
-Ini adalah pasangan dari **FileDrive Portal** (sisi download). File yang diupload di sini akan langsung muncul di portal download karena menggunakan **Folder ID yang sama**.
+Aplikasi ini dapat dipasangkan dengan portal download publik (seperti FileDrive Portal). File yang diupload akan tersimpan di Google Drive dan langsung muncul di portal download jika menggunakan **Folder ID yang sama**.
 
 ---
 
 ## ✨ Fitur
 
-- 🔐 **Proteksi Passcode** — Hanya yang tahu kode akses bisa upload
+- 🔐 **Proteksi Passcode** — Hanya pengguna dengan kode akses yang dapat mengupload
 - 📂 **Drag & Drop** — Seret file langsung ke area upload
-- 📋 **Multi-file** — Upload beberapa file sekaligus (max 10 per batch)
-- 📊 **Progress Real-time** — Progress bar per file & keseluruhan
-- 🌑 **Dark Mode Premium** — UI glassmorphism dengan animasi
-- 📱 **Responsive** — Bekerja di PC dan Mobile
-- 🔗 **Terintegrasi** — Folder ID sudah diisi otomatis (sama dengan filesharedrive)
+- 📋 **Multi-file** — Upload beberapa file sekaligus (maksimal 10 per batch)
+- 📊 **Progress Real-time** — Progress bar per file dan keseluruhan
+- 🌑 **Dark Mode Premium** — UI glassmorphism dengan micro-animations
+- 📱 **Responsive** — Optimal di perangkat desktop dan mobile
+- 🔗 **Terintegrasi** — Dapat diarahkan ke folder Google Drive tujuan yang ditentukan
 
 ---
 
 ## 🛠️ Arsitektur
 
 ```
-Browser (HTML+JS)
+Browser (HTML + JS)
     ↓  POST JSON (base64 file + passcode)
-Google Apps Script Web App  (berjalan sebagai akun kamu)
+Google Apps Script Web App  (berjalan dengan izin akun Google pemilik)
     ↓  DriveApp.createFile()
-Google Drive  →  Folder ID: 1h-L2Www0WneLByudxNpMRgENYttFFk54
-    ↓  (folder yang sama dengan filesharedrive!)
-FileDrive Portal  →  File langsung muncul di portal download publik ✅
+Google Drive  →  Folder Tujuan: YOUR_TARGET_FOLDER_ID
+    ↓  (dihubungkan ke portal download)
+Download Portal  →  File langsung dapat diakses/diunduh ✅
 ```
 
 ---
 
-## 🚀 Cara Setup (2 Langkah Saja)
+## 🚀 Panduan Setup (2 Langkah)
 
 ### Langkah 1 — Buat Google Apps Script Backend (untuk UPLOAD)
 
-> ⚠️ Ini **berbeda** dari Apps Script yang dipakai `filesharedrive`.
-> Yang itu untuk READ (baca daftar file), ini untuk WRITE (upload file baru).
-
 1. Buka **[script.google.com](https://script.google.com)**
 2. Klik **"New Project"** (tombol + di kiri atas)
-3. Hapus semua kode yang ada di editor
-4. **Copy-paste seluruh kode berikut:**
+3. Hapus semua kode default di editor
+4. **Copy-paste kode backend berikut:**
 
 ```javascript
 // ============================================================
@@ -50,9 +47,9 @@ FileDrive Portal  →  File langsung muncul di portal download publik ✅
 // Deploy: Web App | Execute as: Me | Who has access: Anyone
 // ============================================================
 
-// ── KONFIGURASI (hanya 1 baris yang perlu diubah!) ───────────
-const UPLOAD_PASSCODE  = 'GANTI_PASSCODE_INI';             // ← Buat passcode sesukamu
-const TARGET_FOLDER_ID = '1h-L2Www0WneLByudxNpMRgENYttFFk54'; // ← Sudah diisi (folder filesharedrive)
+// ── KONFIGURASI ──────────────────────────────────────────────
+const UPLOAD_PASSCODE  = 'GANTI_DENGAN_PASSCODE_ANDA';        // ← Buat passcode rahasia
+const TARGET_FOLDER_ID = 'GANTI_DENGAN_FOLDER_ID_DRIVE_ANDA'; // ← ID folder Google Drive tujuan
 
 // ── Handler GET (health check) ───────────────────────────────
 function doGet(e) {
@@ -103,32 +100,35 @@ function doPost(e) {
 }
 ```
 
-5. Klik **Save** (Ctrl+S) → beri nama project: `DriveUploader-Upload`
+5. Klik **Save** (Ctrl+S) → beri nama project, misal: `DriveUploader-Backend`
 6. Klik **Deploy** → **New deployment**
-7. Klik ikon ⚙️ → pilih tipe **Web app**
-8. Set pengaturan:
-   - **Execute as**: `Me` ← WAJIB
-   - **Who has access**: `Anyone` ← WAJIB
-9. Klik **Deploy** → Klik **Authorize access** → pilih akun Google kamu
-10. ✅ Copy **Web app URL** yang muncul (format: `https://script.google.com/macros/s/AKfycbx.../exec`)
+7. Klik ikon gerigi (⚙️) di sebelah "Select type" → pilih **Web app**
+8. Konfigurasi deployment:
+   - **Execute as**: `Me` (**Wajib**)
+   - **Who has access**: `Anyone` (**Wajib**)
+9. Klik **Deploy** → Klik **Authorize access** → pilih akun Google Anda dan izinkan akses
+10. ✅ Salin **Web app URL** yang dihasilkan (format: `https://script.google.com/macros/s/AKfycbx.../exec`)
 
 ---
 
-### Langkah 2 — Isi 2 Nilai di `js/uploader.js`
+### Langkah 2 — Konfigurasi di `js/uploader.js`
 
-Buka file `js/uploader.js`, cari bagian `CONFIG` di atas, isi 2 baris ini:
+Buka file `js/uploader.js`, temukan bagian `CONFIG` di baris atas, lalu sesuaikan nilainya:
 
 ```javascript
-// Baris 24 — paste URL dari langkah 1:
+// Paste Web App URL dari Langkah 1:
 APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbx.../exec',
 
-// Baris 32 — buat passcode yang SAMA dengan di Apps Script:
-UPLOAD_PASSCODE: 'GANTI_PASSCODE_INI',
+// Buat passcode yang SAMA dengan di script Google Apps Script:
+UPLOAD_PASSCODE: 'GANTI_DENGAN_PASSCODE_ANDA',
+
+// ID folder Google Drive tujuan:
+DEFAULT_FOLDER_ID: 'GANTI_DENGAN_FOLDER_ID_DRIVE_ANDA',
 ```
 
-> ⚠️ **Passcode di `uploader.js` dan di Apps Script harus SAMA persis!**
+> ⚠️ **Catatan Penting:** Nilai `UPLOAD_PASSCODE` pada `uploader.js` dan di script Google Apps Script harus **persis sama**.
 
-Selesai! Buka `index.html`, masukkan passcode, dan upload file. ✅
+Selesai! Buka `index.html` di browser, masukkan passcode yang telah dibuat, dan aplikasi siap digunakan. ✅
 
 ---
 
@@ -136,40 +136,42 @@ Selesai! Buka `index.html`, masukkan passcode, dan upload file. ✅
 
 ```
 uploadfile/
-├── index.html          ← Halaman utama (3 screen: login, upload, hasil)
+├── index.html          ← Halaman antarmuka (Login, Upload, Status Hasil)
 ├── css/
-│   ├── style.css       ← Desain premium dark mode glassmorphism
-│   └── animations.css  ← Micro-animations & transitions
+│   ├── style.css       ← Styling dark mode modern & glassmorphism
+│   └── animations.css  ← Animasi & transisi UI
 ├── js/
-│   └── uploader.js     ← Logika upload + CONFIG (isi APPS_SCRIPT_URL & PASSCODE)
-└── README.md           ← Panduan ini
+│   └── uploader.js     ← Logika upload & konfigurasi client
+└── README.md           ← Dokumentasi proyek
 ```
 
 ---
 
-## 🔗 Koneksi dengan FileDrive Portal
+## 🔗 Integrasi dengan Portal Download
 
-| | `filesharedrive` (download) | `uploadfile` (upload) |
+Jika Anda menghubungkan aplikasi ini dengan portal download publik:
+
+| Parameter | Portal Download | DriveUploader (Upload) |
 |---|---|---|
-| **Folder Drive** | `1h-L2Www0WneLByudxNpMRgENYttFFk54` | `1h-L2Www0WneLByudxNpMRgENYttFFk54` |
-| **Apps Script** | Script lama (baca file) | Script baru (tulis/upload file) |
-| **Akses user** | Publik (siapapun bisa download) | Passcode (hanya yang tahu kode bisa upload) |
+| **Folder Google Drive** | `ID_FOLDER_DRIVE` | `ID_FOLDER_DRIVE` (Gunakan folder yang sama) |
+| **Fungsi Script** | Membaca daftar file | Mengunggah file baru |
+| **Hak Akses** | Terbuka untuk umum (unduh) | Dilindungi Passcode (unggah) |
 
-File yang diupload lewat **DriveUploader** → masuk ke folder yang sama → langsung muncul di **FileDrive Portal**. ✅
+File yang diunggah melalui **DriveUploader** akan langsung tersimpan di folder Google Drive tersebut dan dapat ditampilkan secara instan di portal download. ✅
 
 ---
 
-## ⚠️ Catatan Penting
+## ⚠️ Informasi Teknis & Batasan
 
-| Hal | Detail |
+| Hal | Keterangan |
 |---|---|
-| **Batas ukuran** | Maksimal ~50MB per file (batasan Google Apps Script) |
-| **Keamanan** | Passcode divalidasi di sisi Apps Script (server-side) |
-| **Deploy ulang** | Jika ubah kode Apps Script → harus **New deployment** (bukan edit existing) |
-| **Gratis** | Tidak butuh billing, VPS, atau API key Google Cloud |
+| **Batas Ukuran File** | Maksimal ~50MB per file (batasan payload Google Apps Script) |
+| **Keamanan** | Verifikasi passcode dilakukan di sisi server (Google Apps Script) |
+| **Pembaruan Kode** | Jika ada perubahan kode di Apps Script, lakukan **New deployment** |
+| **Biaya** | Gratis, tidak memerlukan Google Cloud Billing atau VPS |
 
 ---
 
 ## 💡 Lisensi
 
-Bebas digunakan, dimodifikasi, dan didistribusikan.
+Bebas digunakan, dimodifikasi, dan didistribusikan untuk keperluan pribadi maupun komersial.
